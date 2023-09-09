@@ -1,4 +1,4 @@
-**Nombres de integrantes del grupo:** (completar aquí)
+**Nombres de integrantes del grupo:** (completar aquí, y ver informaciones adicionales solicitadas al final de este documento)
 
 # Proyecto 1.5 - Intermodalidad, sensibilidad al contexto y tiempo real
 
