@@ -109,7 +109,7 @@ function FriendshipTokenHandler() {
 
 El código QR con información de _friendship token_ deberá ser generado por el backend de Travel Log. Puedes definir `FriendshipToken` como un recurso singleton (es decir, sin `id`) en `routes.rb`. Luego, necesitas crear un controlador `FriendshipTokensController` que a través de la acción `show` genere un código QR de amistad para el usuario que llama al _endpoint_. 
 
-Para generar el código QR, puedes usar el gem llamado [rqrcode](https://github.com/whomwah/rqrcode) (encuentra en la documentación el método `as_png`). Además, necesitarás incluir la gem llamada `chunky_png` para generar la imagen PNG. 
+Para generar el código QR, puedes usar la gema llamado [rqrcode](https://github.com/whomwah/rqrcode) (encuentra en la documentación el método `as_png`). Además, necesitarás incluir la gema llamada `chunky_png` para generar la imagen PNG. 
 
 La acción `FriendshipTokensController::show` tendría que llamar a `as_png` de la siguiente manera:
 
@@ -152,7 +152,7 @@ Es importante notar que tu aplicación React deberá ser configurada para conten
 
 ### Configuración de CORS en Rails
 
-CORS (Cross-Origin Resource Sharing) es una medida de seguridad implementada por navegadores web para restringir las solicitudes web a una página de un dominio diferente al dominio de la página que la lanzó. Con tus aplicaciones éste será el caso, pues los dominios de _frontend_ y _backend_ serán distintos (al menos que hagas que tu aplicación Rails contenga la aplicación React y la sirva desde el directorio _public_, pero no te recomendamos esta alternativa, debido a que esto consumirá capacidad de Puma, el servidor de aplicación en RoR, para atender solicitudes a _endpoints_ de API).
+[CORS (Cross-Origin Resource Sharing)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) es una medida de seguridad implementada por navegadores web para restringir las solicitudes web a una página de un dominio diferente al dominio de la página que la lanzó. Con tus aplicaciones éste será el caso, pues los dominios de _frontend_ y _backend_ serán distintos (al menos que hagas que tu aplicación Rails contenga la aplicación React y la sirva desde el directorio _public_, pero no te recomendamos esta alternativa, debido a que esto consumirá capacidad de Puma, el servidor de aplicación en RoR, para atender solicitudes a _endpoints_ de API).
 
 Debido a lo anterior, es necesario configurar la aplicación RoR del _backend_, para que el navegador web pueda realizar peticiones a ella desde la aplicación React. Para realizar esto los pasos en general son los siguientes; en nuestro proyecto, **el primero (agregar la gema) ya está realizado**, pero el segundo lo puedes mejorar para aumentar la seguridad:
 
