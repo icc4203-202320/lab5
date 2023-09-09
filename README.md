@@ -56,9 +56,19 @@ La acción `FriendshipTokensController::show` tendría que llamar a `as_png` de 
 
 Con lo anterior, la aplicación de frontend puede descargar la imagen PNG con el código QR y desplegarla para que el Usuario 2 la escanee.
 
+## Toma de fotografía de avatar
+
+La toma de fotografía de avatar se puede realizar en la aplicación de _frontend_ React de manera simple invocando la aplicación de cámara externa desde un elemento de formulario de tipo `input`:
+
+```html
+<input type="file" accept="capture=camera,image/*">
+```
+
+Sin embargo, se puede dar una mejor experiencia al usuario sin requerir un cambio de aplicación si se opta por acceder a la cámara desde el propio navegador web. Existen para React numerosos ejemplos sobre cómo hace una captura de imagen en el navegador web desde una aplicación React - [aquí les dejo uno completo](https://codesandbox.io/s/react-camera-api-image-capture-forked-qxp3yy). La API web estándar subyacente es la de [navigator.mediaDevices](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mediaDevices).
+
 ## Subidas de archivos de imagen a la aplicación de backend de Travel Log
 
-
+Las subidas de fotografías al backend de la aplicación TravelLog se deben realizar utilizando [Active Storage](https://guides.rubyonrails.org/active_storage_overview.html) de Rails. La aplicación de _backend_ de Travel Log ya incorpora un modelo de `Media` (con archivo adjunto), y `Photo` (derivado de `Media`). Pueden realizar cambios a este diseño si lo estiman necesario.
 
 ## Despliegue de aplicación en sitios públicos
 
