@@ -70,14 +70,26 @@ Sin embargo, se puede dar una mejor experiencia al usuario sin requerir un cambi
 
 Las subidas de fotografías al backend de la aplicación TravelLog se deben realizar utilizando [Active Storage](https://guides.rubyonrails.org/active_storage_overview.html) de Rails. La aplicación de _backend_ de Travel Log ya incorpora un modelo de `Media` (con archivo adjunto), y `Photo` (derivado de `Media`). Pueden realizar cambios a este diseño si lo estiman necesario.
 
+Para subir archivos desde el _frontend_ en React, pueden ver buenos ejemplos, usando Axios, en [esta guía](https://www.filestack.com/fileschool/react/react-file-upload/).
+
 ## Despliegue de aplicación en sitios públicos
 
 
 ## Forma de Trabajo
 
+En esta entrega del proyecto deberán continuar su trabajo en el repositorio del Proyecto 1.3 (frontend). Además, podrán realizar modificaciones al backend (Proyecto 1.1) para actualizar controladores o incluso el modelo de datos (crear migraciones). Lo importante es que todo endpoint expuesto por el backend se mantenga REST. Se les revisarán sus commits a dicho repositorio. Se evaluará el último commit realizado hasta el 25 de septiembre a las 23:59 hrs.
 
-## Informar aquí problemas conocidos o limitaciones
+## Informar aquí URLs, problemas conocidos y limitaciones
+
+A continuación para la evaluación deben informar la URLs de sus aplicaciones de _frontend_ y _backend_:
+
+* URL del _frontend_:
+* URL del _backend_:
+
+------
+**Informar aquí problemas conocidos:**
 
 
-
+------
+**Informar aquí limitaciones en su aplicación:**
 
