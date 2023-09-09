@@ -21,6 +21,69 @@ El escaneo del código se hace con la aplicación de cámara del teléfono (o ap
 
 <img src="imágenes/secuencia-amistad.png" alt="drawing" width="700"/>
 
+### Modelo de amistad en ActiveRecord
+
+En el _backend_ de la aplicación se requiere crear modelo `Friendship` que permita vincular usuarios distintos en relación de amistad. La tabla subyacente `friendship` es básicamente una tabla de unión con claves foráneas a dos usuarios. Se deben además implementar validaciones para evitar la duplicidad de relaciones de amistad, y las auto-referencias (un usuario no es amigo de sí mismo).
+
+Migración:
+
+```ruby
+class CreateFriendships < ActiveRecord::Migration[7.0]
+  def change
+    create_table :friendships do |t|
+      t.references :user, foreign_key: true, null: false
+      t.references :friend, references: :users, null: false
+
+      # Guardar coordenadas en donde se origina la amistad en JSON
+      # Por detault, guarda {}
+      t.string :gps_coordinates, default: "{}", null: false
+
+      t.timestamps
+    end
+
+    # Agregar clave foranea friend_id, en friendships, a users
+    add_foreign_key :friendships, :users, column: :friend_id
+
+  end
+end
+```
+
+Modelos:
+
+```ruby
+class Friendship < ApplicationRecord
+  belongs_to :user
+  belongs_to :friend, class_name: 'User'
+
+  # Validaciones de unicidad y de no-autoreferencia
+  validate :check_uniqueness
+  validate :avoid_self_referencing
+
+  private
+
+  def check_uniqueness
+    # Evita la duplicación (A, B) y (B, A)
+    if Friendship.where(user_id: friend_id, friend_id: user_id).exists? ||
+       Friendship.where(user_id: user_id, friend_id: friend_id).exists?
+      errors.add(:base, "La amistad ya existe.")
+    end
+  end
+
+  def avoid_self_referencing
+    # Evita que un usuario sea amigo de sí mismo
+    if user_id == friend_id
+      errors.add(:base, "No puedes ser amigo de ti mismo.")
+    end
+  end
+end
+
+# Asociaciones para amistad en User
+class User < ApplicationRecord
+  has_many :friendships
+  has_many :friends, through: :friendships
+end
+```
+
 ### Recuperación de variables de query strings en aplicación React
 
 El componente `react-router-dom` provee un hook llamado `useLocation`. A través de este hook se puede acceder a las variables de query string en la URL actual. Además, se puede adjuntar un hook de efecto que actúe cada vez que la URL (y las variables de query string) cambian. El siguiente código ilustra cómo se implementa este comportamiento:
@@ -74,6 +137,49 @@ Para subir archivos desde el _frontend_ en React, pueden ver buenos ejemplos, us
 
 ## Despliegue de aplicación en sitios públicos
 
+La aplicación Travel Log que hemos desarrollado se compone por un _frontend_ hecho de código estático HTML, ES6+ & JSX, y CSS, y un _backend_ transaccional en RoR. La aplicación de _frontend_ al ser código estático, puede alojarse en una variedad de alternativas. A continuación te sugerimos algunas:
+
+* GitHub Pages: Tu aplicación de frontend puede ser publicada desde el mismo repositorio en donde se encuentra en GitHub. Además, cada vez que haces `push` al repositorio, la aplicación se actualiza automáticamente en GitHub Pages. Puedes ver [documentación sobre esto aquí](https://www.geeksforgeeks.org/deployment-of-react-application-using-github-pages/) (revisa del paso 2 en adelante). Puedes ver la [documentación oficial](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages) y en particular, las limitaciones (_Usage limits_).
+* Netlify: Se integra con GitHub, de manera que puede publicar tu aplicación React en cuanto haces `push` al repositorio. Es más flexible que GitHub pages, pues permite usar varios dominios y permite mayor escalabilidad, entre otras ventajas. Puedes ver una [guía aquí](https://www.geeksforgeeks.org/how-to-deploy-react-app-on-netlify-using-github/) (puedes ver desde el paso 2).
+* Firebase Hosting: Competidor de Netlify, se usa en forma muy similar. Ver [guía aquí](https://www.knowledgehut.com/blog/web-development/deploying-react-app-to-firebase#what-is-firebase-hosting?-%C2%A0). 
+
+Para la aplicación de _backend_ necesitas utilizar una plataforma que permita la operación de la aplicación RoR. Esto, a modo de simplificar el despliegue, pues existen muchas alternativas, como la de usar un _Virtual Private Server_ y configurarle todo su software, pero ello no te lo recomendamos por todo el tiempo y esfuerzo de mantenimiento que requiere. Otras alternativas, como usar Kubernetes en una nube pública (Google Cloud o AWS EKS), también requieren un esfuerzo de configuración considerable. Para simplificar las cosas y lograr la mayor productividad posible, te recomendamos usar las siguiente dos alternativas:
+
+* Render: Existe desde 2019 y al igual que Heroku (ver a continuación), permite la publicación muy simplificada de aplicaciones RoR. Mantiene una capa gratuita (_free tier_), por lo que para efectos de este proyecto la recomendamos como primera alternativa. Puedes ver [una guía](https://render.com/docs/deploy-rails) sobre cómo desplegar una aplicación Rails en Render.
+* Heroku: La primera PaaS robusta para desplegar aplicaciones RoR, desde 2007. Heroku simplificó drásticamente el proceso de despliegue de aplicaciones Rails con su modelo de `git push heroku master`. Desde Noviembre de 2022, Heroku ya no ofrece una capa gratuita (_free tier_), sin embargo, el precio de la primera capa es muy accesible. Puedes ver [una guía](https://devcenter.heroku.com/articles/getting-started-with-rails7) sobre cómo desplegar una aplicación Rails en Heroku.
+
+Es importante notar que tu aplicación React deberá ser configurada para contener la URL del _backend_ y realizar todas las llamadas a API _endpoints_ con base a dicha URL. Además, la aplicación Rails en el backend requerirá conocer la URL de la aplicación de _frontend_, pues al generar códigos QR necesitará esta información. Es conveniente que la aplicación Rails obtenga la URL del _frontend_ a través de una [variable de entorno](https://rubyhero.dev/environment-variables). Se usa el objeto `ENV` para esto, p.ej., `ENV.fetch('API_KEY')`.
+
+### Configuración de CORS en Rails
+
+CORS (Cross-Origin Resource Sharing) es una medida de seguridad implementada por navegadores web para restringir las solicitudes web a una página de un dominio diferente al dominio de la página que la lanzó. Con tus aplicaciones éste será el caso, pues los dominios de _frontend_ y _backend_ serán distintos (al menos que hagas que tu aplicación Rails contenga la aplicación React y la sirva desde el directorio _public_, pero no te recomendamos esta alternativa, debido a que esto consumirá capacidad de Puma, el servidor de aplicación en RoR, para atender solicitudes a _endpoints_ de API).
+
+Debido a lo anterior, es necesario configurar la aplicación RoR del _backend_, para que el navegador web pueda realizar peticiones a ella desde la aplicación React. Para realizar esto los pasos en general son los siguientes; en nuestro proyecto, **el primero (agregar la gema) ya está realizado**, pero el segundo lo puedes mejorar para aumentar la seguridad:
+
+1. Agregar la gema `rack-cors`. En tu Gemfile, añade: 
+```ruby
+gem 'rack-cors'
+```
+2. Configurar CORS. En `config/application.rb` o en un archivo initializer (p. ej., `config/initializers/cors.rb` - este es el caso en la presente aplicación), añade (corrige):
+```ruby
+config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    if Rails.env.development?
+      # El puerto de localhost es aquel a través del cual la aplicación React es servida.
+      origins 'localhost:3000', '127.0.0.1:3000'
+    else
+      # Reemplaza con el dominio correcto de tu app en GitHub Pages, Netlify u otra plataforma que hayas escogido. El dominio debiera venir desde una variable de entorno, recuperable con ENV.fetch
+      origins 'tu-dominio-de-github-pages.com'
+    end
+
+    resource '*',
+      headers: :any,
+      methods: [:get, :post, :put, :patch, :delete, :options, :head]
+  end
+end
+```
+
+Aquí, `origins` especifica desde qué dominios se permitirán las solicitudes. Puedes especificar múltiples dominios separándolos por comas o usar un carácter * para permitir cualquier dominio (aunque esto último no es recomendado en producción por razones de seguridad).
 
 ## Forma de Trabajo
 
@@ -86,10 +192,12 @@ A continuación para la evaluación deben informar la URLs de sus aplicaciones d
 * URL del _frontend_:
 * URL del _backend_:
 
-------
+---
+
 **Informar aquí problemas conocidos:**
 
 
-------
+---
+
 **Informar aquí limitaciones en su aplicación:**
 
