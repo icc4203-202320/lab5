@@ -201,3 +201,9 @@ A continuación para la evaluación deben informar la URLs de sus aplicaciones d
 
 **Informar aquí limitaciones en su aplicación:**
 
+---
+
+**Agregar información para facilitar la evaluación:**
+
+Indicar aquí cualquier información que pudiera resultar de utilidad a los ayudantes para que puedan realizar una evaluación completa y justa del trabajo. Por ejemplo, si tienen cuentas de usuario pre-creadas en la aplicación para realizar pruebas, indicarlo aquí.
+
